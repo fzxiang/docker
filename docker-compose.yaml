@@ -1,0 +1,40 @@
+version: '3.3'
+
+services:
+  redis:
+    container_name: redis
+    image: redis:5.0
+    environment:
+      TZ: "Asia/Shanghai"
+    restart: always
+
+  nginx:
+    container_name: local-nginx
+    image: nginx
+    ports:
+      - "80:80"
+    volumes:
+#      - .:/var/www/html
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+
+  php:
+    container_name: local-php
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: local-php
+    extra_hosts:
+      - "oa_project.com:47.99.102.3"
+      # - "me.paoyou.work:172.18.132.200"
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "8080:80"
+    restart: always
+    depends_on:
+      - redis
+    environment:
+      TZ: "Asia/Shanghai"
+      REDIS_HOST: "redis"
